@@ -39,7 +39,6 @@ int main(){
         else if (strcmp(choice, "2") == 0 || strcmp(choice, "delete") == 0){
             deleteAccount();
         }
-        }
         else if (strcmp(choice, "6") == 0 || strcmp(choice, "exit") == 0){
             printf("\nThank you for using the banking system. Goodbye!\n");
             break;
@@ -211,7 +210,7 @@ void createAccount(){
         fgets(name, sizeof(name), stdin);
         name[strcspn(name, "\n")] = 0; 
 
-        if (isAlphaSpaceOnly(name) && containsAlphabet(name)) {
+        if (isAlphaSpaceOnly(name) && Alphabet(name)) {
             break;
         } 
         else {
@@ -314,7 +313,7 @@ void deleteAccount(){
     char accounts[100][20];
     int count = 0;
 
-    while (fgets(accounts[count], sizeof(aacounts[count]), index)) {
+    while (fgets(accounts[count], sizeof(accounts[count]), index)) {
         accounts[count][strcspn(accounts[count], "\n")] = 0; 
         printf("%d. %s\n", count + 1, accounts[count]);
         count++;
@@ -367,7 +366,7 @@ void deleteAccount(){
     fgets(inputPIN, sizeof(inputPIN), stdin);
     inputPIN[strcspn(inputPIN, "\n")] = 0;
 
-    if (strcmp(last4, inputlast4) != 0 || strcmp(storedPIN, inputPIN) !=0){
+    if (strcmp(last4, inputLast4) != 0 || strcmp(storedPIN, inputPIN) != 0){
         printf("Authentication failed. Account not deleted.\n");
         return;
     }
@@ -388,7 +387,8 @@ void deleteAccount(){
         long long tempAcc = atoll(lineAcc);
         if (tempAcc != accountNumber){
             fprintf(temp, "%lld\n", tempAcc);
-    }
+        }
+}
 
     fclose(index);
     fclose(temp);
@@ -402,4 +402,4 @@ void deleteAccount(){
 
     printf("\nACCOUNT DELETED SUCCESSFULLY!\n");
 }
-}
+
