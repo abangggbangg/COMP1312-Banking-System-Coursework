@@ -402,4 +402,4 @@ void deleteAccount(){
 
     printf("\nACCOUNT DELETED SUCCESSFULLY!\n");
 }
-
+}
