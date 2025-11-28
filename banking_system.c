@@ -20,6 +20,7 @@ void logTransaction(const char *message);
 
 void createAccount();
 void deleteAccount();
+void depositMoney();
 
 //MAIN FUNCTION
 
@@ -38,6 +39,9 @@ int main(){
         }
         else if (strcmp(choice, "2") == 0 || strcmp(choice, "delete") == 0){
             deleteAccount();
+        }
+        else if (strcmp(choice, "3") == 0 || strcmp(choice, "deposit") == 0){
+            depositMoney();
         }
         else if (strcmp(choice, "6") == 0 || strcmp(choice, "exit") == 0){
             printf("\nThank you for using the banking system. Goodbye!\n");
@@ -402,4 +406,30 @@ void deleteAccount(){
 
     printf("\nACCOUNT DELETED SUCCESSFULLY!\n");
 }
+
+void depositMoney() {
+    long long accountNumber;
+    char pin[10];
+    double amount;
+    char filePath[100];
+
+    printf("\n--- Deposit Money ---\n");
+
+    printf("Enter Account Number: ");
+    scanf("%lld", &accountNumber);
+    getchar(); // Clear buffer
+
+    sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
+
+    FILE *accountFile = fopen(filePath, "r");
+
+    if (!accountFile) {
+        printf("Account not found\n");
+        return;
+    }
+
+    char line[200];
+    char storedPIN[10];
+    double balance = 0;
+    
 
