@@ -709,6 +709,14 @@ void remittanceMoney(){
     }
     fclose(fileSender);
 
+    //Normalize sender type
+    toLowerCase(typeSender);
+    int len = strlen(typeSender);
+    while (len > 0 && isspace(typeSender[len-1])){
+        typeSender[len - 1] = '\0';
+        len--;
+    }
+
     printf("Enter Sender 4-digit PIN: ");
     fgets(senderPIN, sizeof(senderPIN), stdin);
     senderPIN[strcspn(senderPIN, "\n")] = 0;
@@ -746,6 +754,16 @@ void remittanceMoney(){
         }
     }
     fclose(fileReceiver);
+
+    //Normalize receiver type
+    toLowerCase(typeReceiver);
+    len = strlen(typeReceiver);
+    while (len > 0 && isspace(typeReceiver[len - 1])){
+        typeReceiver[len - 1] = '\0';
+        len--;
+    }
+
+    printf("Current Sender Balance: $%.2f\n", balanceSender);
 
     printf("Enter amount to remit: ");
     scanf("%lf", &amount);
