@@ -304,6 +304,8 @@ void createAccount(){
     printf("Initial Balance: $0.00\n");
 }
 
+//ACCOUNT DELETION FUNCTION
+
 void deleteAccount(){
 
     FILE *index = fopen(INDEX_FILE, "r");
@@ -407,6 +409,8 @@ void deleteAccount(){
     printf("\nACCOUNT DELETED SUCCESSFULLY!\n");
 }
 
+//DEPOSIT MONEY FUNCTION
+
 void depositMoney() {
     long long accountNumber;
     char pin[10];
@@ -431,5 +435,60 @@ void depositMoney() {
     char line[200];
     char storedPIN[10];
     double balance = 0;
-    
 
+    while (fgets(line, sizeof(line), accountFile)){
+        if (strncmp(line, "PIN: ", 4) == 0){
+            sscanf(line, "PIN: %s", storedPIN);
+        }
+        else if (strncmp(line, "Balance:", 8) == 0){
+            sscanf(line, "Balance: %lf", &balance);
+        }
+    }
+
+    fclose(accountFile);
+
+    printf("Enter PIN: ");
+    fgets(pin, sizeof(pin), stdin);
+    pin[strcspn(pin, "\n")] = 0;
+
+    if (strcmp(pin, storedPIN) != 0){
+        printf("Incorrect PIN.\n");
+        return;
+    }
+
+    printf("Enter amount to deposit: ");
+    scanf("%lf", &amount);
+    getchar(); 
+
+    if (amount <= 0){
+        printf("Invalid amount. Deposit must be greater than zero.\n");
+        return;
+    }
+
+    balance += amount;
+
+    accountFile = fopen(filePath, "r");
+    FILE *temp = fopen("database/temp.txt", "w");
+
+    while (fgets(line, sizeof(line), accountFile)){
+        if (strncmp(line, "Balance:", 8) == 0){
+            fprintf(temp, "Balance: %.2f\n", balance);
+        }
+        else{
+            fputs(line, temp);
+        }
+    }
+
+    fclose(accountFile);
+    fclose(temp);
+
+    remove(filePath);
+    rename("database/temp.txt", filePath);
+
+    char logMsg[200];
+    sprintf(logMsg, "Deposit: %.2f to %lld", amount, accountNumber);
+    logTransaction(logMsg);
+
+    printf("\nDeposit successful!\n");
+    printf("New Balance: $%.2f\n", balance);
+}
