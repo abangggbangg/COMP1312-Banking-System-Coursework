@@ -21,6 +21,7 @@ void logTransaction(const char *message);
 void createAccount();
 void deleteAccount();
 void depositMoney();
+void withdrawMoney();
 
 //MAIN FUNCTION
 
@@ -43,6 +44,9 @@ int main(){
         else if (strcmp(choice, "3") == 0 || strcmp(choice, "deposit") == 0){
             depositMoney();
         }
+        else if (strcmp(choice, "4") == 0 || strcmp(choice, "withdraw") == 0){
+            withdrawMoney();
+        }
         else if (strcmp(choice, "6") == 0 || strcmp(choice, "exit") == 0){
             printf("\nThank you for using the banking system. Goodbye!\n");
             break;
@@ -56,11 +60,11 @@ int main(){
 
 void showMenu(){
     printf("\n====== Sigma Banking System ======\n");
-    printf("1. Create Account (create)\n");
-    printf("2. Delete Account (delete)\n");
-    printf("3. Deposit Money (deposit)\n");
-    printf("4. Withdrawal (withdraw)\n");
-    printf("5. Remittance (remit)\n");
+    printf("1. Create Account (or type 'create')\n");
+    printf("2. Delete Account (or type 'delete')\n");
+    printf("3. Deposit Money (or type 'deposit')\n");
+    printf("4. Withdrawal (or type 'withdraw')\n");
+    printf("5. Remittance (or type 'remit')\n");
     printf("6. Exit (or type 'exit')\n");
     printf("Please enter your choice: ");
 }
@@ -334,7 +338,7 @@ void deleteAccount(){
     long long accountNumber;
     printf("\nEnter the account number to delete: ");
     scanf("%lld", &accountNumber);
-    getchar(); //clear buffer
+    getchar(); 
 
     char filePath[100];
     sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
@@ -419,6 +423,29 @@ void depositMoney() {
 
     printf("\n--- Deposit Money ---\n");
 
+    FILE *index = fopen(INDEX_FILE, "r");
+    if (!index){
+        printf("No accounts avaiable to deposit. \n");
+        return;
+    }
+
+    printf("\n--- Existing Account ---\n");
+
+    char lineAccounts[50];
+    int count = 0;
+
+    while (fgets(lineAccounts, sizeof(lineAccounts), index)){
+        lineAccounts[strcspn(lineAccounts, "\n")] = 0;
+        printf("%d. %s\n", ++count, lineAccounts);
+    }
+
+    fclose(index);
+
+    if(count == 0){
+        printf("No accounts available to deposit.\n");
+        return;
+    }
+
     printf("Enter Account Number: ");
     scanf("%lld", &accountNumber);
     getchar(); // Clear buffer
@@ -437,7 +464,7 @@ void depositMoney() {
     double balance = 0;
 
     while (fgets(line, sizeof(line), accountFile)){
-        if (strncmp(line, "PIN: ", 4) == 0){
+        if (strncmp(line, "PIN:", 4) == 0){
             sscanf(line, "PIN: %s", storedPIN);
         }
         else if (strncmp(line, "Balance:", 8) == 0){
@@ -456,12 +483,29 @@ void depositMoney() {
         return;
     }
 
+    char amountStr[100];
     printf("Enter amount to deposit: ");
-    scanf("%lf", &amount);
-    getchar(); 
+    fgets(amountStr, sizeof(amountStr), stdin);
+    amountStr[strcspn(amountStr, "\n")] = 0;
+    
+    char *endptr;
+    amount = strtod(amountStr, &endptr);
 
-    if (amount <= 0){
-        printf("Invalid amount. Deposit must be greater than zero.\n");
+    if (endptr == amountStr) {
+        printf("Invalid amount. Please enter a numeric value.\n");
+        return;
+    }
+
+    while (*endptr) {
+        if(!isspace(*endptr)) {
+            printf("Invalid amount format. Please enter numbers only.\n");
+            return;
+        }
+        endptr++;
+    }
+
+    if (amount <= 0 || amount  > 50000){
+        printf("Invalid amount. Deposit must be greater than $0 and not exceed $50,000 per transaction.\n");
         return;
     }
 
@@ -492,3 +536,115 @@ void depositMoney() {
     printf("\nDeposit successful!\n");
     printf("New Balance: $%.2f\n", balance);
 }
+
+//WITHDRAWAL MONEY FUNCTION
+void withdrawMoney(){
+    long long accountNumber;
+    char pin[10];
+    double amount;
+    char filePath[100];
+
+    printf("\n--- Withdraw Money ---\n");
+
+    FILE *index = fopen(INDEX_FILE, "r");
+    if (!index){
+        printf("No accounts found. \n");
+        return;
+    }
+
+    printf("\n--- Existing Account ---\n");
+
+    char lineAccounts[50];
+    int count = 0;
+
+    while (fgets(lineAccounts, sizeof(lineAccounts), index)){
+        lineAccounts[strcspn(lineAccounts, "\n")] = 0;
+        printf("%d. %s\n", ++count, lineAccounts);
+    }
+
+    fclose(index);
+
+    if (count == 0){
+        printf("No accounts available to withdraw.\n");
+        return;
+    }
+
+    printf("Enter Account Number: ");
+    scanf("%lld", &accountNumber);
+    getchar();
+
+    sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
+
+    FILE *accountFile = fopen(filePath, "r");
+    if (!accountFile){
+        printf("Account not found\n");
+        return;
+    }
+
+    char line[200];
+    char storedPIN[10];
+    double balance = 0;
+
+    while (fgets(line, sizeof(line), accountFile)) {
+        if (strncmp(line, "PIN:", 4) == 0){
+            sscanf(line, "PIN: %s", storedPIN);
+        } 
+        else if (strncmp(line, "Balance:", 8) == 0){
+            sscanf(line, "Balance: %lf", &balance);
+        }
+    }
+
+    fclose(accountFile);
+
+    printf("Enter PIN: ");
+    fgets(pin, sizeof(pin), stdin);
+    pin[strcspn(pin, "\n")] = 0;
+
+    if (strcmp(pin, storedPIN) != 0){
+        printf("Incorrect PIN.\n");
+        return;
+    }
+
+    printf("Current Balance: $%.2f\n", balance);
+    printf("Enter amount to withdraw: ");
+    scanf("%lf", &amount);
+    getchar();
+
+    if (amount <= 0){
+        printf("Invalid amount. Withdrawal must br greater than zero. \n");
+        return;
+    }
+
+    if (amount > balance){
+        printf("Insufficient balance. Current balance: $%.2f. Try to earn more money.\n", balance);
+        return;
+    }
+
+    balance -= amount;
+
+    accountFile = fopen(filePath, "r");
+    FILE *temp = fopen("database/temp.txt", "w");
+
+    while (fgets(line, sizeof(line), accountFile)){
+        if (strncmp(line, "Balance:", 8) == 0){
+            fprintf(temp, "Balance: %.2f\n", balance);
+        }
+        else{
+            fputs(line, temp);
+        }
+    }
+
+    fclose(accountFile);
+    fclose(temp);
+
+    remove(filePath);
+    rename("database/temp.txt", filePath);
+
+    char logMsg[200];
+    sprintf(logMsg, "Withdrawal: %.2f from %lld", amount, accountNumber);
+    logTransaction(logMsg);
+
+    printf("\nWithdrawal successful!\n");
+    printf("New Balance: $%.2f\n", balance);
+}
+
