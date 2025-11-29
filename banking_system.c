@@ -385,6 +385,18 @@ void deleteAccount(){
         return;
     }
 
+    char confirm[10];
+    printf("Are you sure you want to delete your account? (type 'y' for yes, 'n' for no): ");
+    fgets(confirm, sizeof(confirm), stdin);
+    confirm[strcspn(confirm, "\n")] = 0;
+
+    toLowerCase(confirm);
+
+    if (strcmp(confirm, "y") != 0){
+        printf("Account deletion canceled.\n");
+        return;
+    }
+
     if (remove(filePath) == 0) {
         printf("Account deleted successfully.\n");
     } else {
@@ -832,3 +844,4 @@ void remittanceMoney(){
     printf("Sender New Balance: $%.2f\n", balanceSender);
     printf("Receiver New Balance: $%.2f\n", balanceReceiver);
 }
+
