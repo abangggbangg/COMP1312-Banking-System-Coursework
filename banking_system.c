@@ -22,6 +22,7 @@ void createAccount();
 void deleteAccount();
 void depositMoney();
 void withdrawMoney();
+void remittanceMoney();
 
 //MAIN FUNCTION
 
@@ -46,6 +47,9 @@ int main(){
         }
         else if (strcmp(choice, "4") == 0 || strcmp(choice, "withdraw") == 0){
             withdrawMoney();
+        }
+        else if (strcmp(choice, "5") == 0 || strcmp(choice, "remit") == 0){
+            remittanceMoney();
         }
         else if (strcmp(choice, "6") == 0 || strcmp(choice, "exit") == 0){
             printf("\nThank you for using the banking system. Goodbye!\n");
@@ -648,3 +652,165 @@ void withdrawMoney(){
     printf("New Balance: $%.2f\n", balance);
 }
 
+//REMITTANCE MONEY FUNCTION
+
+void remittanceMoney(){
+    long long senderAccountNumber, receiverAccountNumber;
+    char senderPIN[10];
+    char filePathSender[100], filePathReceiver[100];
+    char line[200];
+    char storedPINSender[10], storedPINReceiver[10];
+    char typeSender[15], typeReceiver[15];
+    double balanceSender = 0.0, balanceReceiver = 0.0;
+    double amount, fee = 0.0;
+
+    printf("\n--- Remittance Money ---\n");
+
+    FILE *index = fopen(INDEX_FILE, "r");
+    if (!index) {
+        printf("No accounts avaiable for remittance.\n");
+        return;
+    }
+
+    printf("\n--- Existing Account ---\n");
+    int count = 0;
+    while (fgets(line, sizeof(line), index)) {
+        line[strcspn(line, "\n")] = 0;
+        printf("%d. %s\n", ++count, line);
+    }
+    fclose(index);
+
+    if (count == 0) {
+        printf("No accounts available for remittance.\n");
+        return;
+    }
+    
+    printf("Enter Sender Account Number: ");
+    scanf("%lld", &senderAccountNumber);
+    getchar();
+
+    sprintf(filePathSender, "%s%lld.txt", DATABASE_DIR, senderAccountNumber);
+    FILE *fileSender = fopen(filePathSender, "r");
+    if (!fileSender) {
+        printf("Sender account not found.\n");
+        return;
+    }
+
+    while (fgets(line, sizeof(line), fileSender)){
+        if (strncmp(line, "PIN:", 4) == 0){
+            sscanf(line, "PIN: %s", storedPINSender);
+        }
+        else if (strncmp(line, "Account Type:", 13) == 0){
+            sscanf(line, "Account Type: %s", typeSender);
+        }
+        else if (strncmp(line, "Balance:", 8) == 0){
+            sscanf(line, "Balance: %lf", &balanceSender);
+        }
+    }
+    fclose(fileSender);
+
+    printf("Enter Sender 4-digit PIN: ");
+    fgets(senderPIN, sizeof(senderPIN), stdin);
+    senderPIN[strcspn(senderPIN, "\n")] = 0;
+
+    if (strcmp(senderPIN, storedPINSender) != 0){
+        printf("Incorrect PIN. Authentication failed.\n");
+        return;
+    }
+
+    printf("Enter Receiver Account Number: ");
+    scanf("%lld", &receiverAccountNumber);
+    getchar();
+
+    if (receiverAccountNumber == senderAccountNumber){
+        printf("SENDER and RECEIVER accounts must be different.\n");
+        return;
+    }
+
+    sprintf(filePathReceiver, "%s%lld.txt", DATABASE_DIR, receiverAccountNumber);
+    FILE *fileReceiver = fopen(filePathReceiver, "r");
+    if (!fileReceiver){
+        printf("Receiver account not found.\n");
+        return;
+    }
+
+    while (fgets(line, sizeof(line), fileReceiver)){
+        if (strncmp(line, "PIN:", 4) == 0){
+            sscanf(line, "PIN: %s", storedPINReceiver);
+        }
+        else if (strncmp(line, "Account Type:", 13) == 0){
+            sscanf(line, "Account Type: %s", typeReceiver);
+        }
+        else if (strncmp(line, "Balance:", 8) == 0){
+            sscanf(line, "Balance: %lf", &balanceReceiver);
+        }
+    }
+    fclose(fileReceiver);
+
+    printf("Enter amount to remit: ");
+    scanf("%lf", &amount);
+    getchar();
+
+    if (amount <= 0){
+        printf("Invalid amount. Remittance must be greater than zero.\n");
+        return;
+    }
+
+    if (strcmp(typeSender, "savings") == 0 && strcmp(typeReceiver, "current") == 0){
+        fee = amount * 0.02;
+    }
+    else if (strcmp(typeSender, "current") == 0 && strcmp(typeReceiver, "savings") == 0){
+        fee = amount * 0.03;
+    }
+    else {
+        fee = 0.0;
+    }
+
+    double totalDeduction = amount + fee;
+
+    if (totalDeduction > balanceSender){
+        printf("Insufficient balance in sender account. You need $%.2f (amount + fee).\n", totalDeduction);
+        return;
+    }
+
+    balanceSender -= totalDeduction;
+    balanceReceiver += amount;
+
+    fileSender = fopen(filePathSender, "r");
+    FILE *tempSender = fopen("database/temp.txt", "w");
+    while (fgets(line, sizeof(line), fileSender)){
+        if (strncmp(line, "Balance:", 8) == 0){
+            fprintf(tempSender, "Balance: %.2f\n", balanceSender);
+        }
+        else{
+            fputs(line, tempSender);
+        }
+    }
+    fclose(fileSender);
+    fclose(tempSender);
+    remove(filePathSender);
+    rename("database/temp.txt", filePathSender);
+
+    fileReceiver = fopen(filePathReceiver, "r");
+    FILE *tempReceiver = fopen("database/temp.txt", "w");
+    while (fgets(line, sizeof(line), fileReceiver)){
+        if (strncmp(line, "Balance:", 8) == 0){
+            fprintf(tempReceiver, "Balance: %.2f\n", balanceReceiver);
+        }
+        else{
+            fputs(line, tempReceiver);
+        }
+    }
+    fclose(fileReceiver);
+    fclose(tempReceiver);
+    remove(filePathReceiver);
+    rename("database/temp.txt", filePathReceiver);
+
+    char logMsg[300];
+    sprintf(logMsg, "Remittance: %.2f from %lld to %lld (fee %.2f)", amount, senderAccountNumber, receiverAccountNumber, fee);
+    logTransaction(logMsg);
+
+    printf("\nRemittance successful!\n");
+    printf("Sender New Balance: $%.2f\n", balanceSender);
+    printf("Receiver New Balance: $%.2f\n", balanceReceiver);
+}
