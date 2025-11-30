@@ -52,7 +52,7 @@ int main(){
             remittanceMoney();
         }
         else if (strcmp(choice, "6") == 0 || strcmp(choice, "exit") == 0){
-            printf("\nThank you for using the banking system. Goodbye!\n");
+            printf("\nThank you for using Sigma Banking System. Goodbye!\n");
             break;
         }
         else{
@@ -893,8 +893,8 @@ void remittanceMoney(){
 
     if (endptr == input || *endptr != '\0'){
         receiverAttempts--;
-        printf("Receiver account not found. Attempts left: %d\n", attempts);
-        if (attempts == 0){
+        printf("Receiver account not found. Attempts left: %d\n", receiverAttempts);
+        if (receiverAttempts == 0){
             printf("Too many invalid attempts. Returning to menu...\n");
             return;
         }
@@ -908,8 +908,8 @@ void remittanceMoney(){
     fileReceiver = fopen(filePathReceiver, "r");
     if (!fileReceiver){
         receiverAttempts--;
-        printf("Receiver account not found. Attempts left: %d\n", attempts);
-        if (attempts == 0){
+        printf("Receiver account not found. Attempts left: %d\n", receiverAttempts);
+        if (receiverAttempts == 0){
             printf("Too many invalid attempts. Returning to menu...\n");
             return;
         }
@@ -941,17 +941,17 @@ void remittanceMoney(){
         len--;
     }
 
-    double maxAmount = balanceSender;
+    double feeRate = 0.0;
     if (strcmp(typeSender, "savings") == 0 && strcmp(typeReceiver, "current") == 0){
-        maxAmount = balanceSender / 1.02;
+        feeRate = 0.02;
     }
     else if (strcmp(typeSender, "current") == 0 && strcmp(typeReceiver, "savings") == 0){
-        maxAmount = balanceSender / 1.03;
+        feeRate = balanceSender / 0.03;
     }
 
     printf("Current Sender Balance: $%.2f\n", balanceSender);
 
-    if (!getValidAmount(&amount, maxAmount)){
+    if (!getValidAmount(&amount, 50000.0)){
         printf("Too many invalid amount attempts. Returning to menu...\n");
         return;
     }
