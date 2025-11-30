@@ -205,6 +205,98 @@ bool Alphabet(char *str){
         }
     }
     return false;
+}    
+
+bool getValidAccountNumber(long long *accNum){
+    int attempts = 3;
+    char input[50];
+
+    while (attempts > 0){
+        printf("Enter Account Number: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        bool valid = true;
+        for (int i = 0; input[i]; i++){
+            if (!isdigit(input[i])) valid = false;
+        }
+
+        if(valid && strlen(input) > 0){
+            *accNum = atoll(input);
+            return true;
+        }
+
+        attempts--;
+        printf("Invalid account number. Attempts left: %d\n", attempts);
+    }
+    return false;
+}
+
+bool getValidPIN(char storedPIN[]){
+    int attempts = 3;
+    char input[20];
+
+    while (attempts > 0){
+        printf("Enter 4-digit PIN: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        bool is4digit =
+            strlen(input) == 4 &&
+            isdigit(input[0]) &&
+            isdigit(input[1]) &&
+            isdigit(input[2]) &&
+            isdigit(input[3]);
+
+        if (!is4digit){
+            attempts--;
+            printf("Invalid PIN format. Attempts left: %d\n", attempts);
+            continue;
+        }
+
+        if (strcmp(input, storedPIN) == 0)
+            return true;
+        
+        attempts--;
+        printf("Incorrect PIN. Attempts left: %d\n", attempts);
+    }
+    return false;
+}
+
+bool getValidAmount(double *amount, double maxLimit) {
+    int attempts = 3;
+    char input[100];
+    char *endptr;
+
+    while (attempts > 0){
+        printf("Enter amount: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        *amount = strtod(input, &endptr);
+
+        if (endptr == input){
+            attempts--;
+            printf("Invalid amount. Must be number! Attempts left: %d\n", attempts);
+            continue;
+        }
+
+        while (*endptr && isspace(*endptr)) endptr++;
+        
+        if (*endptr != '\0'){
+            attempts--;
+            printf("Amount contains invalid characters. Attempts left: %d\n", attempts);
+            continue;
+        }
+
+        if (*amount <= 0 || *amount > maxLimit){
+            attempts--;
+            printf("Amount must be greater than $0 and not exceed $%.2f. Attempts left: %d\n", maxLimit, attempts);
+            continue;
+        }
+        return true;
+    }
+    return false;
 }
 
 //ACCOUNT CREATION FUNCTION
@@ -217,7 +309,8 @@ void createAccount(){
 
     printf("\n--- Create New Account ---\n");
 
-    while(true){
+    int attempts = 3;
+    while(attempts > 0){
         printf("Enter Full Name: ");
         fgets(name, sizeof(name), stdin);
         name[strcspn(name, "\n")] = 0; 
@@ -226,11 +319,17 @@ void createAccount(){
             break;
         } 
         else {
-            printf("Invalid name. Please use alphabetic characters and spaces only.\n");
+            attempts--;
+            printf("Invalid name. Please use alphabetic characters and spaces only. Attempts left: %d\n", attempts);
+            if(attempts == 0){
+                printf("Too many invalid attempts. Returning to menu...\n");
+                return;
+            }
         }
     }
 
-    while (true) {
+    attempts = 3;
+    while (attempts > 0) {
         printf("Enter Identification Number (8 digits): ");
         fgets(id, sizeof(id), stdin);
         id[strcspn(id, "\n")] = 0;
@@ -239,11 +338,17 @@ void createAccount(){
             break;
         } 
         else {
-            printf("Invalid ID. Please enter exactly 8 numeric digits.\n");
+            attempts--;
+            printf("Invalid ID. Please enter exactly 8 numeric digits. Attempts left: %d\n", attempts);
+            if (attempts == 0) {
+                printf("Too many invalid attempts. Returning to menu...\n");
+                return;
         }
     }
+    }
 
-    while(true) {
+    attempts = 3;
+    while (attempts > 0) {
         printf("Enter account type (Savings/Current): ");
         fgets(type, sizeof(type), stdin);
         type[strcspn(type, "\n")] = 0;
@@ -253,11 +358,17 @@ void createAccount(){
             break;
         } 
         else {
-            printf("Invalid account type. Please enter 'Savings' or 'Current'.\n");
+            attempts--;
+            printf("Invalid account type. Please enter 'Savings' or 'Current'. Attempts left:%d\n", attempts);
+            if (attempts == 0) {
+                printf("Too many invalid attempts. Returning to menu...\n");
+                return;
+            }
         }
     }
 
-    while(true) {
+    attempts = 3;
+    while (attempts > 0) {
         printf("Enter 4-digit PIN: ");
         fgets(pin, sizeof(pin), stdin);
         pin[strcspn(pin, "\n")] = 0;
@@ -270,9 +381,14 @@ void createAccount(){
             break;
         } 
         else {
-            printf("Invalid PIN. Please enter a 4-digit numeric PIN.\n");
+            attempts--;
+            printf("Invalid PIN. Please enter a 4-digit numeric PIN. Attempts left: %d\n", attempts);
+            if (attempts == 0) {
+                printf("Too many invalid attempts. Returning to menu...\n");
+                return;
         }
     }
+}
 
     srand(time(NULL));
 
@@ -311,6 +427,7 @@ void createAccount(){
     printf("Account Number: %lld\n", accountNumber);
     printf("Initial Balance: $0.00\n");
 }
+
 
 //ACCOUNT DELETION FUNCTION
 
@@ -372,17 +489,42 @@ void deleteAccount(){
 
     char inputLast4[10], inputPIN[10];
 
+    int attempts = 3;
+    while (attempts > 0){
     printf("Enter last 4 digits of ID: ");
     fgets(inputLast4, sizeof(inputLast4), stdin);
     inputLast4[strcspn(inputLast4, "\n")] = 0;
 
+    if (strcmp(last4, inputLast4) == 0){
+        break;
+    }
+    else{
+        attempts--;
+        printf("Incorrect last 4 digits of ID. Attempts left: %d\n", attempts);
+        if (attempts == 0){
+            printf("Too many invalid attempts. Returning to menu...\n");
+            return;
+        }
+    }
+    }
+
+    attempts = 3;
+    while (attempts > 0){
     printf("Enter 4-digit PIN: ");
     fgets(inputPIN, sizeof(inputPIN), stdin);
     inputPIN[strcspn(inputPIN, "\n")] = 0;
 
-    if (strcmp(last4, inputLast4) != 0 || strcmp(storedPIN, inputPIN) != 0){
-        printf("Authentication failed. Account not deleted.\n");
-        return;
+    if (strcmp(storedPIN, inputPIN) == 0){
+        break;
+    }
+    else{
+        attempts--;
+        printf("Incorrect PIN. Attempts left: %d\n", attempts);
+        if (attempts == 0){
+            printf("Too many invalid attempts. Returning to menu...\n");
+            return;
+        }
+    }
     }
 
     char confirm[10];
@@ -398,7 +540,7 @@ void deleteAccount(){
     }
 
     if (remove(filePath) == 0) {
-        printf("Account deleted successfully.\n");
+        printf("\n");
     } else {
         printf("Error deleting account.\n");
         return;
@@ -462,9 +604,10 @@ void depositMoney() {
         return;
     }
 
-    printf("Enter Account Number: ");
-    scanf("%lld", &accountNumber);
-    getchar(); // Clear buffer
+    if(!getValidAccountNumber(&accountNumber)){
+        printf("Too many invalid attempts. Returning to menu...\n");
+        return;
+    }
 
     sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
 
@@ -490,55 +633,13 @@ void depositMoney() {
 
     fclose(accountFile);
 
-    printf("Enter PIN: ");
-    fgets(pin, sizeof(pin), stdin);
-    pin[strcspn(pin, "\n")] = 0;
-
-    if (strcmp(pin, storedPIN) != 0){
-        printf("Incorrect PIN.\n");
+    if(!getValidPIN(storedPIN)){
+        printf("Too many invalid PIN attempts. Returning to menu...\n");
         return;
     }
 
-    char amountStr[100];
-    int attempts = 3;
-    bool validAmount = false;
-
-    while (attempts > 0){
-    printf("Enter amount to deposit: ");
-    fgets(amountStr, sizeof(amountStr), stdin);
-    amountStr[strcspn(amountStr, "\n")] = 0;
-    
-    char *endptr;
-    amount = strtod(amountStr, &endptr);
-
-    if (endptr == amountStr) {
-        attempts--;
-        printf("Invalid amount. Please enter a numeric value. Attempts left: %d\n", attempts);
-        return;
-    }
-
-    while (*endptr) {
-        if(!isspace(*endptr)) {
-            attempts--;
-            printf("Invalid amount format. Please enter numbers only. Attempts left: %d\n", attempts);
-            goto retry_continue;
-        }
-        endptr++;
-    }
-
-    if (amount > 0 && amount  <= 50000){
-        validAmount = true;
-        break;
-    }
-
-    attempts--;
-    printf("Invalid amount. Deposit must be greater than $0 and not exceed $50,000. Attempts left: %d\n", attempts);
-
-    retry_continue:;
-    }
-
-    if (!validAmount){
-        printf("Too many invalid attempts. Returning to menu...\n");
+    if(!getValidAmount(&amount, 50000)){
+        printf("Too many invalid amount attempts. Returning to menu...\n");
         return;
     }
 
@@ -602,9 +703,10 @@ void withdrawMoney(){
         return;
     }
 
-    printf("Enter Account Number: ");
-    scanf("%lld", &accountNumber);
-    getchar();
+    if (!getValidAccountNumber(&accountNumber)){
+        printf("Too many invalid attempts. Returning to menu...\n");
+        return;
+    }
 
     sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
 
@@ -629,22 +731,14 @@ void withdrawMoney(){
 
     fclose(accountFile);
 
-    printf("Enter PIN: ");
-    fgets(pin, sizeof(pin), stdin);
-    pin[strcspn(pin, "\n")] = 0;
-
-    if (strcmp(pin, storedPIN) != 0){
-        printf("Incorrect PIN.\n");
+    if (!getValidPIN(storedPIN)){
+        printf("Too many invalid PIN attempts. Returning to menu...\n");
         return;
     }
 
     printf("Current Balance: $%.2f\n", balance);
-    printf("Enter amount to withdraw: ");
-    scanf("%lf", &amount);
-    getchar();
-
-    if (amount <= 0){
-        printf("Invalid amount. Withdrawal must br greater than zero. \n");
+    if(!getValidAmount(&amount, 50000)){
+        printf("Too many invalid amount attempts. Returning to menu...\n");
         return;
     }
 
@@ -692,6 +786,13 @@ void remittanceMoney(){
     char typeSender[15], typeReceiver[15];
     double balanceSender = 0.0, balanceReceiver = 0.0;
     double amount, fee = 0.0;
+    bool validSender = false;
+    bool validReceiver = false;
+
+    FILE *fileSender = NULL;
+    FILE *fileReceiver = NULL;
+    FILE *tempFile = NULL;
+    FILE *tempReceiver = NULL;
 
     printf("\n--- Remittance Money ---\n");
 
@@ -714,12 +815,38 @@ void remittanceMoney(){
         return;
     }
     
-    printf("Enter Sender Account Number: ");
-    scanf("%lld", &senderAccountNumber);
-    getchar();
+    char input[50];
+    int attempts = 3;
+
+    while (attempts > 0){
+        printf("Enter Sender Account Number: ");
+        if (!fgets(input, sizeof(input), stdin)){
+            printf("Input error. Returning to menu...\n");
+            return;
+        }
+        input[strcspn(input, "\n")] = 0;
+
+        char *endptr;
+        senderAccountNumber = strtoll(input, &endptr, 10);
+
+        if (endptr == input || *endptr != '\0'){
+            attempts--;
+            printf("Sender account not found.\n");
+            if (attempts == 0){
+                printf("Too many invalid attempts. Returning to menu...\n");
+                return;
+            }
+        }
+        else {
+            validSender = true;
+            break;
+        }
+    }
+
+    if(!validSender) return;
 
     sprintf(filePathSender, "%s%lld.txt", DATABASE_DIR, senderAccountNumber);
-    FILE *fileSender = fopen(filePathSender, "r");
+    fileSender = fopen(filePathSender, "r");
     if (!fileSender) {
         printf("Sender account not found.\n");
         return;
@@ -746,31 +873,48 @@ void remittanceMoney(){
         len--;
     }
 
-    printf("Enter Sender 4-digit PIN: ");
-    fgets(senderPIN, sizeof(senderPIN), stdin);
-    senderPIN[strcspn(senderPIN, "\n")] = 0;
-
-    if (strcmp(senderPIN, storedPINSender) != 0){
-        printf("Incorrect PIN. Authentication failed.\n");
+    if (!getValidPIN(storedPINSender)){
+        printf("Too many invalid PIN attempts. Returning to menu...\n");
         return;
     }
 
-    printf("Enter Receiver Account Number: ");
-    scanf("%lld", &receiverAccountNumber);
-    getchar();
+    int receiverAttempts = 3;
 
-    if (receiverAccountNumber == senderAccountNumber){
+    while (receiverAttempts > 0){
+    printf("Enter Receiver Account Number: ");
+    if (!fgets(input, sizeof(input), stdin)){
+        printf("Input error. Returning to menu...\n");
+        return;
+    }
+    input[strcspn(input, "\n")] = 0;
+
+    char *endptr;
+    receiverAccountNumber = strtoll(input, &endptr, 10);
+
+    if (endptr == input || *endptr != '\0'){
+        receiverAttempts--;
+        printf("Receiver account not found. Attempts left: %d\n", attempts);
+        if (attempts == 0){
+            printf("Too many invalid attempts. Returning to menu...\n");
+            return;
+        }
+    }
+    else if (receiverAccountNumber == senderAccountNumber){
         printf("SENDER and RECEIVER accounts must be different.\n");
         return;
     }
-
+    else {
     sprintf(filePathReceiver, "%s%lld.txt", DATABASE_DIR, receiverAccountNumber);
-    FILE *fileReceiver = fopen(filePathReceiver, "r");
+    fileReceiver = fopen(filePathReceiver, "r");
     if (!fileReceiver){
-        printf("Receiver account not found.\n");
-        return;
+        receiverAttempts--;
+        printf("Receiver account not found. Attempts left: %d\n", attempts);
+        if (attempts == 0){
+            printf("Too many invalid attempts. Returning to menu...\n");
+            return;
+        }
     }
-
+    else {
     while (fgets(line, sizeof(line), fileReceiver)){
         if (strncmp(line, "PIN:", 4) == 0){
             sscanf(line, "PIN: %s", storedPINReceiver);
@@ -783,6 +927,11 @@ void remittanceMoney(){
         }
     }
     fclose(fileReceiver);
+    validReceiver = true;
+    break;
+    }
+}
+}
 
     //Normalize receiver type
     toLowerCase(typeReceiver);
@@ -792,14 +941,18 @@ void remittanceMoney(){
         len--;
     }
 
+    double maxAmount = balanceSender;
+    if (strcmp(typeSender, "savings") == 0 && strcmp(typeReceiver, "current") == 0){
+        maxAmount = balanceSender / 1.02;
+    }
+    else if (strcmp(typeSender, "current") == 0 && strcmp(typeReceiver, "savings") == 0){
+        maxAmount = balanceSender / 1.03;
+    }
+
     printf("Current Sender Balance: $%.2f\n", balanceSender);
 
-    printf("Enter amount to remit: ");
-    scanf("%lf", &amount);
-    getchar();
-
-    if (amount <= 0){
-        printf("Invalid amount. Remittance must be greater than zero.\n");
+    if (!getValidAmount(&amount, maxAmount)){
+        printf("Too many invalid amount attempts. Returning to menu...\n");
         return;
     }
 
@@ -839,7 +992,7 @@ void remittanceMoney(){
     rename("database/temp.txt", filePathSender);
 
     fileReceiver = fopen(filePathReceiver, "r");
-    FILE *tempReceiver = fopen("database/temp.txt", "w");
+    tempReceiver = fopen("database/temp.txt", "w");
     while (fgets(line, sizeof(line), fileReceiver)){
         if (strncmp(line, "Balance:", 8) == 0){
             fprintf(tempReceiver, "Balance: %.2f\n", balanceReceiver);
