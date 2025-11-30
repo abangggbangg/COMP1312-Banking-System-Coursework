@@ -500,6 +500,10 @@ void depositMoney() {
     }
 
     char amountStr[100];
+    int attempts = 3;
+    bool validAmount = false;
+
+    while (attempts > 0){
     printf("Enter amount to deposit: ");
     fgets(amountStr, sizeof(amountStr), stdin);
     amountStr[strcspn(amountStr, "\n")] = 0;
@@ -508,20 +512,33 @@ void depositMoney() {
     amount = strtod(amountStr, &endptr);
 
     if (endptr == amountStr) {
-        printf("Invalid amount. Please enter a numeric value.\n");
+        attempts--;
+        printf("Invalid amount. Please enter a numeric value. Attempts left: %d\n", attempts);
         return;
     }
 
     while (*endptr) {
         if(!isspace(*endptr)) {
-            printf("Invalid amount format. Please enter numbers only.\n");
-            return;
+            attempts--;
+            printf("Invalid amount format. Please enter numbers only. Attempts left: %d\n", attempts);
+            goto retry_continue;
         }
         endptr++;
     }
 
-    if (amount <= 0 || amount  > 50000){
-        printf("Invalid amount. Deposit must be greater than $0 and not exceed $50,000 per transaction.\n");
+    if (amount > 0 && amount  <= 50000){
+        validAmount = true;
+        break;
+    }
+
+    attempts--;
+    printf("Invalid amount. Deposit must be greater than $0 and not exceed $50,000. Attempts left: %d\n", attempts);
+
+    retry_continue:;
+    }
+
+    if (!validAmount){
+        printf("Too many invalid attempts. Returning to menu...\n");
         return;
     }
 
@@ -844,4 +861,3 @@ void remittanceMoney(){
     printf("Sender New Balance: $%.2f\n", balanceSender);
     printf("Receiver New Balance: $%.2f\n", balanceReceiver);
 }
-
