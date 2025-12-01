@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/abangggbangg/Desktop/banking-system-c/banking_system'
+relocations:     []
+...

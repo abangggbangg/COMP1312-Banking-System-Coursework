@@ -1,0 +1,5 @@
+Name: Ali
+ID: 12345678
+Account Type: current
+PIN: 1234
+Balance: 50000.00
