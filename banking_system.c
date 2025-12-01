@@ -7,7 +7,7 @@
 
 #define DATABASE_DIR "/Users/abangggbangg/Desktop/banking-system-c/database/"
 #define INDEX_FILE "/Users/abangggbangg/Desktop/banking-system-c/database/index.txt"
-#define TRANSACTION_LOG "database/transactions.log"
+#define TRANSACTION_LOG "/Users/abangggbangg/Desktop/banking-system-c/database/transactions.log"
 
 void showSessionInfo();
 void showMenu();

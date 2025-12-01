@@ -2,4 +2,4 @@ Name: Gerald
 ID: 00000000
 Account Type: savings
 PIN: 0000
-Balance: 50000.00
+Balance: 4949.00
