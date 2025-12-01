@@ -5,9 +5,9 @@
 #include <ctype.h>
 #include <time.h>
 
-#define DATABASE_DIR "database/"
-#define INDEX_FILE "database/index.txt"
-#define TRANSACTION_LOG "database/transactions.log"
+#define DATABASE_DIR "/Users/abangggbangg/Desktop/banking-system-c/database/"
+#define INDEX_FILE "/Users/abangggbangg/Desktop/banking-system-c/database/index.txt"
+#define TRANSACTION_LOG "/Users/abangggbangg/Desktop/banking-system-c/database/transactions.log"
 
 void showSessionInfo();
 void showMenu();
