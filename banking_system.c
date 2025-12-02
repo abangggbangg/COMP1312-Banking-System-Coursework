@@ -5,9 +5,9 @@
 #include <ctype.h>
 #include <time.h>
 
-#define DATABASE_DIR "/Users/abangggbangg/Desktop/banking-system-c/database/"
-#define INDEX_FILE "/Users/abangggbangg/Desktop/banking-system-c/database/index.txt"
-#define TRANSACTION_LOG "/Users/abangggbangg/Desktop/banking-system-c/database/transactions.log"
+#define DATABASE_DIR "./database/"
+#define INDEX_FILE "./database/index.txt"
+#define TRANSACTION_LOG "./database/transactions.log"
 
 void showSessionInfo();
 void showMenu();
@@ -27,7 +27,7 @@ void remittanceMoney();
 //MAIN FUNCTION
 
 int main(){
-    system("mkdir -p database");
+    // system("mkdir -p database");
     showSessionInfo();
     char choice[30];
     while (true){
@@ -457,9 +457,38 @@ void deleteAccount(){
     }
 
     long long accountNumber;
-    printf("\nEnter the account number to delete: ");
-    scanf("%lld", &accountNumber);
-    getchar(); 
+    char input[50];
+    int attempts;
+    bool validAcc = false;
+
+    attempts = 3;
+    while (attempts > 0){
+        printf("\nEnter the account number to delete: ");
+        fgets(input, sizeof(input), stdin);
+        input[strcspn(input, "\n")] = 0;
+
+        bool isDigits = true;
+        for (int i = 0; input[i]; i++){
+            if (!isdigit(input[i])){
+                isDigits = false;
+                break;
+            }
+        }
+
+        if (strlen(input) > 0 && isDigits){
+            accountNumber = atoll(input);
+            validAcc = true;
+            break;
+        }
+
+        attempts--;
+        printf("Invalid account number. Attempts left: %d\n", attempts);
+    }
+
+    if (!validAcc){
+        printf("Too many invalid attempts. Returning to menu...\n");
+        return;
+    }
 
     char filePath[100];
     sprintf(filePath, "%s%lld.txt", DATABASE_DIR, accountNumber);
@@ -489,7 +518,7 @@ void deleteAccount(){
 
     char inputLast4[10], inputPIN[10];
 
-    int attempts = 3;
+    attempts = 3;
     while (attempts > 0){
     printf("Enter last 4 digits of ID: ");
     fgets(inputLast4, sizeof(inputLast4), stdin);
